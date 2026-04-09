@@ -1,208 +1,197 @@
-Smart HUD — AI-Powered Ambient Notification Display
+# Smart HUD — AI-Powered Ambient Notification Display
 
-Overview
-
-Smart HUD is an embedded system that transforms desktop notifications into concise, meaningful summaries and displays them on a physical device in real time.
+## Overview
+Smart HUD is an embedded ambient interface that captures desktop notifications, semantically compresses them using AI, and displays them on a dedicated physical screen in real time.
 
 It combines:
-
 - OS-level notification capture
-- AI-based semantic summarization
-- Cloud message transport (MQTT)
-- Embedded display with tactile navigation
+- AI semantic summarization
+- MQTT cloud transport
+- ESP32 embedded rendering
+- Tactile history navigation
 
-The result is a low-distraction, ambient interface for managing incoming information.
-
----
-
-Features
-
-- Notification Capture
-  
-  - Listens to system notifications via DBus (Linux)
-
-- AI Summarization
-  
-  - Uses LLMs via OpenRouter to compress notifications into 3–6 word summaries
-  - Preserves intent rather than raw wording
-
-- Spam & Noise Filtering
-  
-  - Removes emoji floods, Unicode noise, and repeated words
-  - Normalizes media (GIFs, stickers, etc.)
-
-- Cloud Transport
-  
-  - Publishes summaries via MQTT (EMQX broker)
-
-- Embedded Display
-  
-  - ESP32 + 16x2 I2C LCD
-  - Real-time updates
-
-- Tactile Navigation
-  
-  - Potentiometer-based scrolling through last 10 notifications
-
-- Smooth Rendering
-  
-  - Flicker-free updates
-  - Auto horizontal scrolling for long messages
+The result is a low-distraction, glanceable notification surface for managing incoming information.
 
 ---
 
-Architecture
+## Features
 
-Desktop Notifications
-        ↓
-DBus Listener (Python)
-        ↓
-Sanitize + Summarize (LLM)
-        ↓
-MQTT (EMQX Broker)
-        ↓
-ESP32 (MicroPython)
-        ↓
-LCD Display + Knob Navigation
+### Notification Capture
+- Listens to Linux desktop notifications via **DBus**
+- Extracts sender, title, and body
+
+### AI Summarization
+- Uses **LLMs through OpenRouter**
+- Compresses notifications into **3–6 word semantic summaries**
+- Preserves intent over literal wording
+
+### Spam + Noise Filtering
+- Removes emoji floods
+- Strips Unicode noise
+- Deduplicates repeated words
+- Normalizes media placeholders
+
+### Cloud Transport
+- Publishes summaries through **MQTT**
+- Uses **EMQX broker**
+
+### Embedded Display
+- **ESP32 + 16x2 I2C LCD**
+- Real-time updates
+
+### Tactile Navigation
+- **10k potentiometer**
+- Browse the **last 10 notifications**
+
+### Smooth Rendering
+- Flicker-free updates
+- Horizontal scrolling for overflow text
 
 ---
 
-Hardware Requirements
+## Architecture
+Desktop Notifications  
+↓  
+Linux DBus Listener (Python)  
+↓  
+Sanitize + Summarize (LLM)  
+↓  
+MQTT Publish (EMQX)  
+↓  
+ESP32 Subscriber (MicroPython)  
+↓  
+16x2 LCD + Knob Navigation  
 
+---
+
+## Hardware Requirements
 - ESP32
-- 16x2 I2C LCD (PCF8574, address 0x27)
+- 16x2 I2C LCD (PCF8574, address `0x27`)
 - 10k potentiometer
-- Breadboard + jumper wires
+- Breadboard
+- Jumper wires
 
 ---
 
-Wiring
+## Wiring
 
-LCD (I2C)
+### LCD (I2C)
+| LCD Pin | ESP32 |
+|---|---|
+| VCC | 5V |
+| GND | GND |
+| SDA | GPIO 21 |
+| SCL | GPIO 22 |
 
-- VCC → 5V
-- GND → GND
-- SDA → GPIO 21
-- SCL → GPIO 22
-
-Potentiometer
-
-- Left → GND
-- Middle → GPIO 34
-- Right → 3.3V
+### Potentiometer
+| Potentiometer Pin | ESP32 |
+|---|---|
+| Left | GND |
+| Middle | GPIO 34 |
+| Right | 3.3V |
 
 ---
 
-Software Requirements
+## Software Requirements
 
-Laptop
+### Laptop
+- Python **3.10+**
+- Linux with DBus notification daemon
 
-- Python 3.10+
-- Linux (DBus required)
-
-Install dependencies:
-
+Install:
+```bash
 pip install requests python-dotenv paho-mqtt
+```
 
-ESP32
-
+### ESP32
 - MicroPython firmware
-- "umqtt.simple"
-- "pico_i2c_lcd.py"
+- `umqtt.simple`
+- `pico_i2c_lcd.py`
 
 ---
 
-Setup
+## Setup
 
-1. Clone Repository
-
+### 1. Clone Repository
+```bash
 git clone https://github.com/yourusername/smart-hud
 cd smart-hud
+```
 
----
-
-2. Configure API Key
-
-Create ".env" file:
-
+### 2. Configure API Key
+Create `.env`
+```env
 OPENROUTER_API_KEY=your_key_here
+```
 
----
-
-3. Run Laptop Server
-
+### 3. Run Laptop Server
+```bash
 python server.py
+```
 
-You should see:
-
+Expected output:
+```text
 Listening to desktop notification daemon...
+```
 
----
-
-4. Flash ESP32
-
+### 4. Flash ESP32
 Upload:
+- `main.py`
+- `pico_i2c_lcd.py`
 
-- "main.py"
-- "pico_i2c_lcd.py"
-
----
-
-5. Power On
-
-- ESP32 connects to WiFi
-- Subscribes to MQTT
-- Displays "HUD Ready"
-- Incoming notifications appear automatically
+### 5. Power On
+Expected boot flow:
+- Connects to WiFi
+- Connects to MQTT
+- Displays `HUD Ready`
+- Streams summaries automatically
 
 ---
 
-Example Output
+## Example Output
 
-Input (Notification):
+### Input Notification
+```text
+Mom: Hello dont forget to eat snacks <gif>
+```
 
-Mom : Hello dont forget to eat snacks 😂😂😂
-
-Output (HUD):
-
+### HUD Output
+```text
 Mom snack reminder
+```
 
 ---
 
-Queue Behavior
-
-- Stores last 10 notifications
-- New messages appear at index 0
+## Queue Behavior
+- Stores **last 10 notifications**
+- New entries inserted at **index 0**
 - Rotate potentiometer to browse history
 
 ---
 
-Limitations
-
-- Requires Linux (DBus)
-- Relies on external LLM API
-- 16x2 LCD limits visual richness
-- No direct reply functionality (yet)
+## Limitations
+- Linux only (DBus dependency)
+- External LLM API dependency
+- LCD constrained to 16x2 characters
+- No reply support yet
 
 ---
 
-Future Improvements
-
-- OLED / TFT display upgrade
+## Future Improvements
+- OLED / TFT display migration
 - Quick reply buttons
-- Gesture-based interaction
-- Sender priority alerts
-- Local summarization model
+- Gesture navigation
+- Sender priority routing
+- Local on-device summarization
 - Battery-powered enclosure
+- Notification category filtering
 
 ---
 
-License
-
+## License
 MIT License
 
 ---
 
-Author
-
+## Author
 Aaron
