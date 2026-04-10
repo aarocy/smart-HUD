@@ -141,7 +141,7 @@ Upload:
 
 ### 5. Power On
 Expected boot flow:
-- Connects to WiFi
+- Connects to WiFi (Don't forget to change the wifi ssid and password)
 - Connects to MQTT
 - Displays `HUD Ready`
 - Streams summaries automatically
