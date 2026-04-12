@@ -41,7 +41,7 @@ The result is a low-distraction, glanceable notification surface for managing in
 
 ### Tactile Navigation
 - **10k potentiometer**
-- Browse the **last 10 notifications**
+- Browse the **last 30 notifications**
 
 ### Smooth Rendering
 - Flicker-free updates
